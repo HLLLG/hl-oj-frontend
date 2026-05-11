@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h } from 'vue'
+import { computed, h, type Component } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   HomeOutlined,
@@ -48,9 +48,11 @@ import {
   TrophyOutlined,
   BarChartOutlined,
   MessageOutlined,
+  SettingOutlined,
 } from '@ant-design/icons-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
+import checkAccess from '@/access/checkAccess.ts'
 
 const loginUserStore = useLoginUserStore()
 
@@ -59,13 +61,28 @@ const router = useRouter()
 
 const selectedKeys = computed(() => [route.path])
 
-const menuItems = computed<MenuProps['items']>(() => [
-  { key: '/', label: '首页', icon: h(HomeOutlined) },
-  { key: '/problems', label: '题目', icon: h(CodeOutlined) },
-  { key: '/contests', label: '竞赛', icon: h(TrophyOutlined) },
-  { key: '/ranking', label: '排行榜', icon: h(BarChartOutlined) },
-  { key: '/discuss', label: '讨论', icon: h(MessageOutlined) },
-])
+const iconMap: Record<string, Component> = {
+  home: HomeOutlined,
+  problems: CodeOutlined,
+  contests: TrophyOutlined,
+  ranking: BarChartOutlined,
+  discuss: MessageOutlined,
+  admin: SettingOutlined,
+}
+
+const menuItems = computed<MenuProps['items']>(() => {
+  const children = router.options.routes[0]?.children ?? []
+  return children
+    .filter((r) => {
+      if (r.meta?.hideInMenu) return false
+      return checkAccess(loginUserStore.loginUser, r.meta?.access)
+    })
+    .map((r) => ({
+      key: r.path === '' ? '/' : `/${r.path}`,
+      label: r.meta?.title,
+      icon: r.name ? h(iconMap[r.name as string] ?? HomeOutlined) : undefined,
+    }))
+})
 
 function handleMenuClick({ key }: { key: string }) {
   router.push(key)

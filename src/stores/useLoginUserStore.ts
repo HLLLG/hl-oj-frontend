@@ -18,6 +18,7 @@ export const useLoginUserStore = defineStore('id', () => {
       loginUser.value = {
         id: 1,
         userName: '未知用户',
+        userRole: 'admin',
       }
     }, 3000)
   }
