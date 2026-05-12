@@ -5,27 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { message, theme } from 'ant-design-vue'
-
-import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
-import { useRouter } from 'vue-router'
-import ACCESS_ENUM from '@/access/accessEnum.ts'
-import checkAccess from '@/access/checkAccess.ts'
-
-const loginUserStore = useLoginUserStore()
-loginUserStore.fetchLoginUser()
-
-const router = useRouter()
-
-router.beforeEach((to, from, next) => {
-  const needAccess = (to.meta?.access as string) ?? ACCESS_ENUM.NOT_LOGIN
-  if (!checkAccess(loginUserStore.loginUser, needAccess)) {
-    message.warning('您没有权限访问该页面')
-    next(from.path || '/')
-    return
-  }
-  next()
-})
+import { theme } from 'ant-design-vue'
 
 const antTheme = {
   algorithm: theme.darkAlgorithm,

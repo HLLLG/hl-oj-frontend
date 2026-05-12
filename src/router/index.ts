@@ -6,6 +6,8 @@ import ContestsView from '@/views/ContestsView.vue'
 import RankingView from '@/views/RankingView.vue'
 import DiscussView from '@/views/DiscussView.vue'
 import AdminView from '@/views/AdminView.vue'
+import UserLoginView from '@/views/user/UserLoginView.vue'
+import UserRegisterView from '@/views/user/UserRegisterView.vue'
 import ACCESS_ENUM from '@/access/accessEnum.ts'
 
 declare module 'vue-router' {
@@ -29,6 +31,13 @@ const router = createRouter({
         { path: 'ranking', name: 'ranking', component: RankingView, meta: { access: ACCESS_ENUM.NOT_LOGIN, title: '排行榜' } },
         { path: 'discuss', name: 'discuss', component: DiscussView, meta: { access: ACCESS_ENUM.NOT_LOGIN, title: '讨论' } },
         { path: 'admin', name: 'admin', component: AdminView, meta: { access: ACCESS_ENUM.ADMIN, title: '管理员' } },
+      ],
+    },
+    {
+      path: '/user',
+      children: [
+        { path: 'login', name: 'userLogin', component: UserLoginView, meta: { access: ACCESS_ENUM.NOT_LOGIN, hideInMenu: true } },
+        { path: 'register', name: 'userRegister', component: UserRegisterView, meta: { access: ACCESS_ENUM.NOT_LOGIN, hideInMenu: true } },
       ],
     },
   ],

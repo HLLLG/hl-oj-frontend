@@ -25,13 +25,24 @@
       <!-- User / Auth -->
       <a-col flex="180px">
         <div class="header-right">
-          <div v-if="loginUserStore.loginUser.id" class="user-info">
-            <img src="https://picsum.photos/50/50" alt="User Avatar" class="user-avatar" />
-            <span class="user-name">{{ loginUserStore.loginUser.userName }}</span>
-          </div>
+          <a-dropdown v-if="loginUserStore.loginUser.id" :trigger="['click']">
+            <div class="user-info">
+              <img
+                :src="loginUserStore.loginUser.userAvatar || 'https://api.dicebear.com/7.x/bottts/svg?seed=' + loginUserStore.loginUser.id"
+                alt="avatar"
+                class="user-avatar"
+              />
+              <span class="user-name">{{ loginUserStore.loginUser.userName || loginUserStore.loginUser.userAccount }}</span>
+            </div>
+            <template #overlay>
+              <a-menu class="user-dropdown-menu" @click="handleUserMenuClick">
+                <a-menu-item key="logout">退出登录</a-menu-item>
+              </a-menu>
+            </template>
+          </a-dropdown>
           <a-space v-else :size="8">
-            <a-button class="btn-login" @click="() => {}">登录</a-button>
-            <a-button type="primary" class="btn-register" @click="() => {}">注册</a-button>
+            <a-button class="btn-login" @click="router.push('/user/login')">登录</a-button>
+            <a-button type="primary" class="btn-register" @click="router.push('/user/register')">注册</a-button>
           </a-space>
         </div>
       </a-col>
@@ -50,9 +61,11 @@ import {
   MessageOutlined,
   SettingOutlined,
 } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import checkAccess from '@/access/checkAccess.ts'
+import { userLogout } from '@/api/userController'
 
 const loginUserStore = useLoginUserStore()
 
@@ -86,6 +99,19 @@ const menuItems = computed<MenuProps['items']>(() => {
 
 function handleMenuClick({ key }: { key: string }) {
   router.push(key)
+}
+
+async function handleUserMenuClick({ key }: { key: string }) {
+  if (key === 'logout') {
+    try {
+      await userLogout()
+    } catch {
+      // ignore logout API errors
+    }
+    loginUserStore.setLoginUser({ userName: '未登录' })
+    message.success('已退出登录')
+    router.push('/')
+  }
 }
 </script>
 
@@ -165,6 +191,13 @@ function handleMenuClick({ key }: { key: string }) {
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.user-info:hover {
+  background: rgba(99, 102, 241, 0.08);
 }
 
 .user-avatar {
@@ -258,5 +291,22 @@ function handleMenuClick({ key }: { key: string }) {
 .nav-menu.ant-menu-horizontal .ant-menu-item .anticon {
   font-size: 15px;
   margin-right: 6px;
+}
+
+.user-dropdown-menu {
+  background: #131425 !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 10px !important;
+  min-width: 120px !important;
+}
+
+.user-dropdown-menu .ant-menu-item {
+  color: #94a3b8 !important;
+  border-radius: 8px !important;
+}
+
+.user-dropdown-menu .ant-menu-item:hover {
+  background: rgba(99, 102, 241, 0.12) !important;
+  color: #e2e8f0 !important;
 }
 </style>
