@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev          # start dev server
-npm run build        # type-check + build
+npm run dev          # start dev server (http://localhost:5173)
+npm run build        # type-check + production build
 npm run type-check   # vue-tsc only
 npm run lint         # oxlint + eslint (both with --fix)
 npm run format       # prettier on src/
@@ -16,19 +16,21 @@ No test suite is set up yet.
 
 ## Architecture
 
-**Stack:** Vue 3 (Composition API) + TypeScript + Vite, Ant Design Vue 4 (fully imported), Pinia, Vue Router 5.
+**Stack:** Vue 3 (Composition API) + TypeScript + Vite 8, Ant Design Vue 4 (fully imported), Pinia, Vue Router 5.
 
-### Entry & global setup (`App.vue`)
+**Key libraries:**
+- `md-editor-v3` — Markdown editor (`MdEditor` for editing, `MdPreview` for read-only display). Always pass `theme="dark"`. CSS imported globally in `main.ts`.
+- `@guolao/vue-monaco-editor` — Monaco Editor Vue 3 wrapper loaded from CDN. Registered globally in `main.ts` as `VueMonacoEditorPlugin`; CDN path is `https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs`. Use `<vue-monaco-editor>` in templates.
 
-`App.vue` is the single place for:
-- Calling `loginUserStore.fetchLoginUser()` on app start (currently mocked with a 3-second timeout; real API call is commented out).
-- The global `router.beforeEach` navigation guard — this is where route-level access control is enforced.
-- Ant Design dark theme configuration (`theme.darkAlgorithm`, custom `colorPrimary: #6366f1`).
-- Global CSS variables (`--oj-bg`, `--oj-primary`, etc.) and Ant Design component overrides.
+### Entry & global setup
+
+- **`App.vue`** — only contains Ant Design dark theme config (`theme.darkAlgorithm`, `colorPrimary: #6366f1`) and global CSS variables (`--oj-bg`, `--oj-primary`, etc.).
+- **`src/main.ts`** — registers Pinia, Vue Router, Ant Design, and the Monaco editor plugin; imports `md-editor-v3` CSS and `src/access/access.ts`.
+- **`src/access/access.ts`** — contains the `router.beforeEach` guard. On the first navigation it calls `loginUserStore.fetchLoginUser()` to hydrate user state, then uses `checkAccess()` to gate the route. Unauthenticated users are redirected to `/user/login?redirect=...`.
 
 ### Layout
 
-All pages share one layout: `BasicLayout.vue` (header → `<router-view>` → footer). The root route `/` uses `BasicLayout` as its component; all pages are nested children.
+All pages share one layout: `BasicLayout.vue` (header → `<router-view>` → footer). The root route `/` uses `BasicLayout` as its component; every page is a nested child of it.
 
 ### Access control
 
@@ -36,20 +38,59 @@ Three files work together:
 
 | File | Role |
 |---|---|
-| `src/access/accessEnum.ts` | Defines `NOT_LOGIN / USER / ADMIN` string constants |
+| `src/access/accessEnum.ts` | `NOT_LOGIN / USER / ADMIN` string constants |
 | `src/access/checkAccess.ts` | Pure function: `checkAccess(loginUser, needAccess)` → boolean |
-| `router/index.ts` | Every route carries `meta.access` (from `ACCESS_ENUM`) and `meta.title` |
+| `src/router/index.ts` | Every route carries `meta.access` and `meta.title` |
 
-`GlobalHeader.vue` reads `router.options.routes[0].children`, filters by `checkAccess`, and builds the nav menu dynamically — so adding a new route with `meta.access` + `meta.title` is enough to control its visibility in the nav.
+`GlobalHeader.vue` reads `router.options.routes[0].children`, filters by `checkAccess` and `!meta.hideInMenu`, then builds the nav menu dynamically. It maintains an `iconMap` keyed by route `name`. Routes with `hideInMenu: true` are never shown in the nav regardless of access level.
 
-The `router.beforeEach` guard in `App.vue` uses `checkAccess` + `meta.access` to block navigation and redirects back to the previous route on failure.
+### Route structure
+
+```
+/                     → BasicLayout
+  (index)             home           NOT_LOGIN  nav visible
+  problems            problems       NOT_LOGIN  nav visible
+  contests/ranking/discuss           NOT_LOGIN  nav visible
+  admin               admin          ADMIN      nav visible
+  admin/question      adminQuestion  ADMIN      nav visible (题目管理)
+  admin/question/create              ADMIN      hideInMenu
+  admin/question/edit/:id            ADMIN      hideInMenu
+  question/:id        questionDetail NOT_LOGIN  hideInMenu
+  submissions         submissions    USER       hideInMenu
+/user/login                          NOT_LOGIN  hideInMenu (outside BasicLayout)
+/user/register                       NOT_LOGIN  hideInMenu (outside BasicLayout)
+```
+
+### Question module (`src/views/question/`)
+
+| File | Purpose |
+|---|---|
+| `QuestionManageView.vue` | Admin table: search, paginate, edit/delete actions |
+| `QuestionCreateView.vue` | Admin form: title, tags, MdEditor content/answer, judge cases, judge config |
+| `QuestionEditView.vue` | Same form pre-filled via `getQuestionById`; saves with `updateQuestion` |
+| `QuestionDetailView.vue` | Split-panel: left = MdPreview + submission history tab; right = Monaco editor + submit + polling result |
+| `QuestionSubmitListView.vue` | Submission history table with language/status filters and code view modal |
+
+**Difficulty convention:** difficulty is stored as a tag (`简单` / `中等` / `困难`). Views that display difficulty extract it from `tags[]` and separate it from algorithm tags.
+
+**Judge status polling:** after `doQuestionSubmit`, `QuestionDetailView` polls `getQuestionSubmitVoById` every 1.5 s for up to 60 s (40 attempts). Clear the interval in `onBeforeUnmount`.
+
+**Admin vs user APIs:** `listQuestionByPage` (admin, returns `Question` with JSON-string fields) vs `listQuestionVoByPage` (user, returns `QuestionVO` with parsed arrays).
 
 ### Adding a new page
 
 1. Create `src/views/XxxView.vue`.
-2. Add the route to `router/index.ts` with `meta: { access: ACCESS_ENUM.XXX, title: '...' }`.
-3. Add an entry in `GlobalHeader.vue`'s `iconMap` keyed by the route `name`.
+2. Add the route to `src/router/index.ts` as a child of the root `/` route, with `meta: { access: ACCESS_ENUM.XXX, title: '...' }`. Add `hideInMenu: true` if it should not appear in nav.
+3. If nav-visible, add an entry in `GlobalHeader.vue`'s `iconMap` keyed by the route `name`.
 
 ### Pinia store
 
-`useLoginUserStore` exposes `loginUser` (reactive ref), `fetchLoginUser()` (async, to be wired to real API), and `setLoginUser()`. The store id is `'id'` — change this to something descriptive when the store is stable.
+`useLoginUserStore` (id `'id'`) exposes `loginUser` (reactive ref, initially `{ userName: '未登录' }`), `fetchLoginUser()` (calls `/user/get/login`), and `setLoginUser()`.
+
+### TypeScript notes
+
+`tsconfig.app.json` enables `noUncheckedIndexedAccess: true`. Any `Record<string, T>` lookup returns `T | undefined`; always provide a `?? fallback` (e.g. `map[key] ?? ''`).
+
+### API layer
+
+All API functions live in `src/api/` and use the `request()` helper from `src/request.ts`. The base URL is `http://localhost:8123/api`. Response shape is always `{ code, message, data }` — `code === 0` means success. The response interceptor redirects to `/user/login` on `code === 40100`.

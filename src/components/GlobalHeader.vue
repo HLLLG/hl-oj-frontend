@@ -59,7 +59,7 @@ import {
   TrophyOutlined,
   BarChartOutlined,
   MessageOutlined,
-  SettingOutlined,
+  OrderedListOutlined,
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
@@ -80,7 +80,7 @@ const iconMap: Record<string, Component> = {
   contests: TrophyOutlined,
   ranking: BarChartOutlined,
   discuss: MessageOutlined,
-  admin: SettingOutlined,
+  adminQuestion: OrderedListOutlined,
 }
 
 const menuItems = computed<MenuProps['items']>(() => {
@@ -122,13 +122,12 @@ async function handleUserMenuClick({ key }: { key: string }) {
   z-index: 100;
   height: 64px;
   padding: 0;
-  background: rgba(7, 8, 16, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
-  box-shadow: 0 1px 40px rgba(99, 102, 241, 0.08);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+  box-shadow: 0 1px 20px rgba(99, 102, 241, 0.07);
 }
 
-/* a-row 作为容器，覆盖 antd 默认 margin */
 .header-inner {
   height: 100%;
   max-width: 1280px;
@@ -154,13 +153,13 @@ async function handleUserMenuClick({ key }: { key: string }) {
 
 .logo-icon {
   font-size: 22px;
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8));
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.6));
 }
 
 .logo-text {
   font-size: 20px;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #1e293b;
   letter-spacing: -0.5px;
   line-height: 1;
 }
@@ -172,7 +171,6 @@ async function handleUserMenuClick({ key }: { key: string }) {
   background-clip: text;
 }
 
-/* Nav menu：撑满 auto 列，高度填充 header */
 .nav-menu {
   background: transparent !important;
   border-bottom: none !important;
@@ -197,7 +195,7 @@ async function handleUserMenuClick({ key }: { key: string }) {
 }
 
 .user-info:hover {
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(99, 102, 241, 0.07);
 }
 
 .user-avatar {
@@ -205,19 +203,19 @@ async function handleUserMenuClick({ key }: { key: string }) {
   height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(99, 102, 241, 0.4);
+  border: 2px solid rgba(99, 102, 241, 0.25);
 }
 
 .user-name {
   font-size: 14px;
-  color: #e2e8f0;
+  color: #1e293b;
   font-weight: 500;
 }
 
 .btn-login {
   background: transparent;
-  border: 1px solid rgba(99, 102, 241, 0.4);
-  color: #a5b4fc !important;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  color: #6366f1 !important;
   border-radius: 8px;
   font-size: 14px;
   transition: all 0.2s;
@@ -225,8 +223,7 @@ async function handleUserMenuClick({ key }: { key: string }) {
 
 .btn-login:hover {
   border-color: #6366f1 !important;
-  color: #818cf8 !important;
-  background: rgba(99, 102, 241, 0.1) !important;
+  background: rgba(99, 102, 241, 0.07) !important;
 }
 
 .btn-register {
@@ -234,13 +231,13 @@ async function handleUserMenuClick({ key }: { key: string }) {
   border: none !important;
   border-radius: 8px;
   font-size: 14px;
-  box-shadow: 0 0 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.28);
   transition: all 0.2s;
 }
 
 .btn-register:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4) !important;
 }
 </style>
 
@@ -259,9 +256,8 @@ async function handleUserMenuClick({ key }: { key: string }) {
   transition: color 0.2s;
 }
 
-/* hover：只改字色，不显示下划线 */
 .nav-menu.ant-menu-horizontal .ant-menu-item:hover {
-  color: #cbd5e1 !important;
+  color: #6366f1 !important;
   background: transparent !important;
 }
 
@@ -270,16 +266,14 @@ async function handleUserMenuClick({ key }: { key: string }) {
   border-color: transparent !important;
 }
 
-/* 默认 ::after 不显示 */
 .nav-menu.ant-menu-horizontal .ant-menu-item::after {
   border-bottom: none !important;
   border-color: transparent !important;
   transition: none !important;
 }
 
-/* 仅当前选中项才显示高亮下划线和字色 */
 .nav-menu.ant-menu-horizontal .ant-menu-item-selected {
-  color: #a5b4fc !important;
+  color: #6366f1 !important;
   background: transparent !important;
 }
 
@@ -294,19 +288,20 @@ async function handleUserMenuClick({ key }: { key: string }) {
 }
 
 .user-dropdown-menu {
-  background: #131425 !important;
-  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
   border-radius: 10px !important;
   min-width: 120px !important;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.1) !important;
 }
 
 .user-dropdown-menu .ant-menu-item {
-  color: #94a3b8 !important;
+  color: #475569 !important;
   border-radius: 8px !important;
 }
 
 .user-dropdown-menu .ant-menu-item:hover {
-  background: rgba(99, 102, 241, 0.12) !important;
-  color: #e2e8f0 !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+  color: #6366f1 !important;
 }
 </style>

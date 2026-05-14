@@ -50,8 +50,10 @@
     <section class="features-section">
       <div class="section-container">
         <div class="section-header">
-          <h2 class="section-title">为什么选择 <span class="gradient-text">HLOJ</span></h2>
-          <p class="section-desc">专为竞赛选手和算法爱好者打造的高品质在线评测平台</p>
+          <div>
+            <h2 class="section-title">为什么选择 <span class="gradient-text">HLOJ</span></h2>
+            <p class="section-desc">专为竞赛选手和算法爱好者打造的高品质在线评测平台</p>
+          </div>
         </div>
 
         <div class="features-grid">
@@ -115,25 +117,25 @@ const features = [
     icon: '⚡',
     title: '毫秒级判题',
     desc: '高性能沙箱评测引擎，支持 C++/Java/Python 等主流语言，提交即评，结果即时可见',
-    bg: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(99,102,241,0.05))',
+    bg: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(99,102,241,0.04))',
   },
   {
     icon: '🏆',
     title: '在线竞赛',
     desc: '定期举办 ACM/OI 赛制竞赛，实时榜单，与全国选手同台竞技，检验真实水平',
-    bg: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05))',
+    bg: 'linear-gradient(135deg, rgba(245,158,11,0.12), rgba(245,158,11,0.04))',
   },
   {
     icon: '📊',
     title: '能力分析',
     desc: '多维度算法标签体系，智能分析薄弱点，个性化推题，高效精准提升',
-    bg: 'linear-gradient(135deg, rgba(6,182,212,0.15), rgba(6,182,212,0.05))',
+    bg: 'linear-gradient(135deg, rgba(6,182,212,0.12), rgba(6,182,212,0.04))',
   },
   {
     icon: '💡',
     title: '题解社区',
     desc: '海量高质量题解与思路分析，代码评论互动，知识共享，共同进步',
-    bg: 'linear-gradient(135deg, rgba(139,92,246,0.15), rgba(139,92,246,0.05))',
+    bg: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04))',
   },
 ]
 
@@ -160,7 +162,7 @@ function difficultyColor(difficulty: string) {
   background: var(--oj-bg);
 }
 
-/* ===== Hero ===== */
+/* Hero */
 .hero-section {
   position: relative;
   min-height: 680px;
@@ -180,13 +182,12 @@ function difficultyColor(difficulty: string) {
   position: absolute;
   border-radius: 50%;
   filter: blur(120px);
-  opacity: 0.35;
 }
 
 .glow-1 {
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, #6366f1, transparent);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18), transparent);
   top: -200px;
   left: -100px;
 }
@@ -194,18 +195,17 @@ function difficultyColor(difficulty: string) {
 .glow-2 {
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, #8b5cf6, transparent);
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.12), transparent);
   bottom: -150px;
   right: -50px;
-  opacity: 0.2;
 }
 
 .hero-grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(99, 102, 241, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
@@ -221,11 +221,11 @@ function difficultyColor(difficulty: string) {
   align-items: center;
   gap: 8px;
   padding: 6px 16px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: 100px;
   font-size: 13px;
-  color: #a5b4fc;
+  color: #6366f1;
   margin-bottom: 32px;
   font-weight: 500;
 }
@@ -235,18 +235,13 @@ function difficultyColor(difficulty: string) {
   height: 6px;
   border-radius: 50%;
   background: #6366f1;
-  box-shadow: 0 0 8px #6366f1;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .hero-title {
@@ -261,7 +256,7 @@ function difficultyColor(difficulty: string) {
 }
 
 .title-line {
-  color: #e2e8f0;
+  color: #1e293b;
 }
 
 .title-gradient {
@@ -293,13 +288,13 @@ function difficultyColor(difficulty: string) {
   background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
   border: none !important;
   border-radius: 12px !important;
-  box-shadow: 0 4px 30px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
   transition: all 0.25s !important;
 }
 
 .btn-primary-glow:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 40px rgba(99, 102, 241, 0.65) !important;
+  box-shadow: 0 8px 36px rgba(99, 102, 241, 0.55) !important;
 }
 
 .btn-outline {
@@ -307,16 +302,16 @@ function difficultyColor(difficulty: string) {
   padding: 0 28px;
   font-size: 15px;
   font-weight: 600;
-  background: transparent !important;
-  border: 1px solid rgba(99, 102, 241, 0.35) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.3) !important;
   border-radius: 12px !important;
-  color: #a5b4fc !important;
+  color: #6366f1 !important;
   transition: all 0.25s !important;
 }
 
 .btn-outline:hover {
   border-color: #6366f1 !important;
-  background: rgba(99, 102, 241, 0.08) !important;
+  background: rgba(99, 102, 241, 0.06) !important;
   transform: translateY(-2px);
 }
 
@@ -326,7 +321,7 @@ function difficultyColor(difficulty: string) {
   justify-content: center;
   gap: 48px;
   padding: 24px 0;
-  border-top: 1px solid rgba(99, 102, 241, 0.12);
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
 }
 
 .stat-item {
@@ -336,7 +331,7 @@ function difficultyColor(difficulty: string) {
 .stat-value {
   font-size: 26px;
   font-weight: 800;
-  background: linear-gradient(135deg, #e2e8f0, #a5b4fc);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -345,11 +340,11 @@ function difficultyColor(difficulty: string) {
 
 .stat-label {
   font-size: 12px;
-  color: #475569;
+  color: #94a3b8;
   margin-top: 4px;
 }
 
-/* ===== Sections ===== */
+/* Sections */
 .section-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -366,7 +361,7 @@ function difficultyColor(difficulty: string) {
 .section-title {
   font-size: 32px;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #1e293b;
   letter-spacing: -0.5px;
 }
 
@@ -378,12 +373,12 @@ function difficultyColor(difficulty: string) {
 }
 
 .section-desc {
-  font-size: 16px;
-  color: #475569;
+  font-size: 15px;
+  color: #64748b;
   margin-top: 8px;
 }
 
-/* ===== Features ===== */
+/* Features */
 .features-section {
   padding: 80px 0;
 }
@@ -396,18 +391,18 @@ function difficultyColor(difficulty: string) {
 
 .feature-card {
   padding: 28px 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 16px;
   transition: all 0.3s;
   cursor: default;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.05);
 }
 
 .feature-card:hover {
-  border-color: rgba(99, 102, 241, 0.4);
-  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.3);
   transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.1);
 }
 
 .feature-icon-wrap {
@@ -418,7 +413,7 @@ function difficultyColor(difficulty: string) {
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.15);
 }
 
 .feature-icon {
@@ -428,7 +423,7 @@ function difficultyColor(difficulty: string) {
 .feature-title {
   font-size: 17px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #1e293b;
   margin-bottom: 10px;
 }
 
@@ -438,7 +433,7 @@ function difficultyColor(difficulty: string) {
   line-height: 1.7;
 }
 
-/* ===== Recent Problems ===== */
+/* Recent Problems */
 .recent-section {
   padding: 60px 0 100px;
 }
@@ -450,7 +445,7 @@ function difficultyColor(difficulty: string) {
 }
 
 .view-all-btn:hover {
-  color: #818cf8 !important;
+  color: #4f46e5 !important;
 }
 
 .problems-list {
@@ -464,7 +459,7 @@ function difficultyColor(difficulty: string) {
   align-items: center;
   gap: 20px;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: #ffffff;
   border: 1px solid rgba(99, 102, 241, 0.1);
   border-radius: 10px;
   cursor: pointer;
@@ -472,13 +467,14 @@ function difficultyColor(difficulty: string) {
 }
 
 .problem-item:hover {
-  border-color: rgba(99, 102, 241, 0.35);
-  background: rgba(99, 102, 241, 0.05);
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.03);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.08);
 }
 
 .problem-id {
   font-size: 13px;
-  color: #475569;
+  color: #94a3b8;
   font-family: 'JetBrains Mono', monospace;
   min-width: 40px;
 }
@@ -487,12 +483,12 @@ function difficultyColor(difficulty: string) {
   flex: 1;
   font-size: 15px;
   font-weight: 500;
-  color: #cbd5e1;
+  color: #334155;
   transition: color 0.2s;
 }
 
 .problem-item:hover .problem-name {
-  color: #a5b4fc;
+  color: #6366f1;
 }
 
 .problem-tag {
@@ -502,7 +498,7 @@ function difficultyColor(difficulty: string) {
 
 .problem-ac {
   font-size: 13px;
-  color: #475569;
+  color: #94a3b8;
   min-width: 90px;
   text-align: right;
 }

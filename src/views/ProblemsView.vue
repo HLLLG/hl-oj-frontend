@@ -22,7 +22,7 @@
       <div class="filter-bar">
         <div class="filter-group">
           <span class="filter-label">难度</span>
-          <a-radio-group v-model:value="difficulty" button-style="solid" class="diff-radio">
+          <a-radio-group v-model:value="difficulty" button-style="solid" class="diff-radio" @change="handleFilter">
             <a-radio-button value="">全部</a-radio-button>
             <a-radio-button value="简单">简单</a-radio-button>
             <a-radio-button value="中等">中等</a-radio-button>
@@ -37,29 +37,30 @@
             placeholder="选择标签"
             class="tag-select"
             allow-clear
+            @change="handleFilter"
           >
             <a-select-option v-for="tag in tags" :key="tag" :value="tag">{{ tag }}</a-select-option>
           </a-select>
         </div>
 
         <div class="filter-stats">
-          共 <strong>{{ filteredProblems.length }}</strong> 道题目
+          共 <strong>{{ pagination.total }}</strong> 道题目
         </div>
       </div>
 
       <!-- Problem Table -->
       <a-table
-        :data-source="filteredProblems"
+        :data-source="problemList"
         :columns="columns"
-        :pagination="pagination"
+        :loading="loading"
+        :pagination="false"
         row-key="id"
         class="problem-table"
         :custom-row="customRow"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'status'">
-            <CheckCircleFilled v-if="record.solved" class="status-solved" />
-            <MinusCircleOutlined v-else class="status-unsolved" />
+            <MinusCircleOutlined class="status-unsolved" />
           </template>
 
           <template v-else-if="column.key === 'id'">
@@ -71,106 +72,158 @@
           </template>
 
           <template v-else-if="column.key === 'difficulty'">
-            <a-tag :color="difficultyColor(record.difficulty)" class="difficulty-tag">
-              {{ record.difficulty }}
+            <a-tag
+              v-if="getDifficulty(record.tags)"
+              :color="difficultyColor(getDifficulty(record.tags))"
+              class="difficulty-tag"
+            >
+              {{ getDifficulty(record.tags) }}
             </a-tag>
+            <span v-else class="muted">-</span>
           </template>
 
           <template v-else-if="column.key === 'tags'">
             <div class="tag-list">
-              <a-tag v-for="tag in record.tags" :key="tag" class="algo-tag">{{ tag }}</a-tag>
+              <a-tag
+                v-for="tag in getAlgoTags(record.tags)"
+                :key="tag"
+                class="algo-tag"
+              >
+                {{ tag }}
+              </a-tag>
             </div>
           </template>
 
           <template v-else-if="column.key === 'acRate'">
             <div class="ac-rate">
               <a-progress
-                :percent="parseFloat(record.acRate)"
+                :percent="computeAcRate(record.submitNum, record.acceptedNum)"
                 :show-info="false"
                 size="small"
                 stroke-color="#6366f1"
                 trail-color="rgba(99,102,241,0.1)"
                 class="ac-progress"
               />
-              <span class="ac-text">{{ record.acRate }}%</span>
+              <span class="ac-text">{{ computeAcRate(record.submitNum, record.acceptedNum).toFixed(1) }}%</span>
             </div>
           </template>
         </template>
       </a-table>
+
+      <!-- Pagination -->
+      <div class="pagination-wrap">
+        <a-pagination
+          v-model:current="pagination.current"
+          v-model:page-size="pagination.pageSize"
+          :total="pagination.total"
+          :show-size-changer="false"
+          show-quick-jumper
+          @change="loadData"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { CheckCircleFilled, MinusCircleOutlined } from '@ant-design/icons-vue'
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { MinusCircleOutlined } from '@ant-design/icons-vue'
+import { message } from 'ant-design-vue'
 import type { TableColumnsType } from 'ant-design-vue'
+import { listQuestionVoByPage } from '@/api/questionController'
 
+const router = useRouter()
+
+const loading = ref(false)
+const problemList = ref<any[]>([])
 const searchText = ref('')
 const difficulty = ref('')
 const selectedTag = ref<string | undefined>(undefined)
 
+const pagination = reactive({
+  current: 1,
+  pageSize: 20,
+  total: 0,
+})
+
 const tags = ['数组', '字符串', '动态规划', '树', '图', '贪心', '二分', '哈希表', '排序', '栈']
+
+const difficultyTags = new Set(['简单', '中等', '困难'])
+
+function getDifficulty(tagList?: string[]): string {
+  if (!tagList) return ''
+  return tagList.find((t) => difficultyTags.has(t)) ?? ''
+}
+
+function getAlgoTags(tagList?: string[]): string[] {
+  if (!tagList) return []
+  return tagList.filter((t) => !difficultyTags.has(t))
+}
+
+function computeAcRate(submitNum?: number, acceptedNum?: number): number {
+  if (!submitNum || submitNum === 0) return 0
+  return ((acceptedNum ?? 0) / submitNum) * 100
+}
 
 const columns: TableColumnsType = [
   { key: 'status', title: '', width: 40, align: 'center' },
-  { key: 'id', title: '#', dataIndex: 'id', width: 80 },
+  { key: 'id', title: '题号', dataIndex: 'id', width: 80 },
   { key: 'title', title: '题目', dataIndex: 'title' },
-  { key: 'difficulty', title: '难度', dataIndex: 'difficulty', width: 100 },
-  { key: 'tags', title: '标签', dataIndex: 'tags', width: 220 },
-  { key: 'acRate', title: '通过率', dataIndex: 'acRate', width: 160 },
+  { key: 'difficulty', title: '难度', width: 100 },
+  { key: 'tags', title: '标签', width: 220 },
+  { key: 'acRate', title: '通过率', width: 160 },
 ]
-
-interface Problem {
-  id: number
-  title: string
-  difficulty: string
-  tags: string[]
-  acRate: string
-  solved: boolean
-}
-
-const problems: Problem[] = [
-  { id: 1, title: '两数之和', difficulty: '简单', tags: ['数组', '哈希表'], acRate: '78.3', solved: true },
-  { id: 2, title: '最长回文子串', difficulty: '中等', tags: ['字符串', '动态规划'], acRate: '41.5', solved: false },
-  { id: 3, title: '接雨水', difficulty: '困难', tags: ['数组', '栈', '双指针'], acRate: '25.8', solved: false },
-  { id: 4, title: '二叉树的最大深度', difficulty: '简单', tags: ['树', '递归'], acRate: '82.1', solved: true },
-  { id: 5, title: '最小生成树', difficulty: '中等', tags: ['图', '贪心'], acRate: '55.6', solved: false },
-  { id: 6, title: '爬楼梯', difficulty: '简单', tags: ['动态规划'], acRate: '88.0', solved: true },
-  { id: 7, title: '编辑距离', difficulty: '困难', tags: ['字符串', '动态规划'], acRate: '32.4', solved: false },
-  { id: 8, title: '最长公共子序列', difficulty: '中等', tags: ['字符串', '动态规划'], acRate: '47.2', solved: false },
-  { id: 9, title: '快速排序', difficulty: '中等', tags: ['排序', '分治'], acRate: '61.8', solved: true },
-  { id: 10, title: 'N皇后', difficulty: '困难', tags: ['回溯'], acRate: '18.9', solved: false },
-]
-
-const filteredProblems = computed(() => {
-  return problems.filter((p) => {
-    const matchSearch =
-      !searchText.value ||
-      p.title.includes(searchText.value) ||
-      String(p.id).includes(searchText.value)
-    const matchDiff = !difficulty.value || p.difficulty === difficulty.value
-    const matchTag = !selectedTag.value || p.tags.includes(selectedTag.value)
-    return matchSearch && matchDiff && matchTag
-  })
-})
-
-const pagination = {
-  pageSize: 20,
-  showSizeChanger: false,
-  showQuickJumper: true,
-}
 
 function difficultyColor(d: string) {
   const map: Record<string, string> = { 简单: 'success', 中等: 'warning', 困难: 'error' }
   return map[d] ?? 'default'
 }
 
-function handleSearch() {}
-
-function customRow(_record: Problem) {
-  return { style: 'cursor:pointer;' }
+function handleSearch() {
+  pagination.current = 1
+  loadData()
 }
+
+function handleFilter() {
+  pagination.current = 1
+  loadData()
+}
+
+function customRow(record: any) {
+  return {
+    style: 'cursor:pointer;',
+    onClick: () => router.push(`/question/${record.id}`),
+  }
+}
+
+async function loadData() {
+  loading.value = true
+  try {
+    const tagFilter: string[] = []
+    if (difficulty.value) tagFilter.push(difficulty.value)
+    if (selectedTag.value) tagFilter.push(selectedTag.value)
+
+    const res: any = await listQuestionVoByPage({
+      current: pagination.current,
+      pageSize: pagination.pageSize,
+      title: searchText.value || undefined,
+      tags: tagFilter.length > 0 ? tagFilter : undefined,
+    })
+    if (res.data.code === 0 && res.data.data) {
+      problemList.value = res.data.data.records ?? []
+      pagination.total = res.data.data.total ?? 0
+    } else {
+      message.error(res.data.message || '加载失败')
+    }
+  } catch {
+    message.error('请求失败，请检查后端服务是否启动')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadData)
 </script>
 
 <style scoped>
@@ -196,14 +249,14 @@ function customRow(_record: Problem) {
 .page-title {
   font-size: 32px;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #1e293b;
   letter-spacing: -0.5px;
   margin: 0 0 6px;
 }
 
 .page-desc {
   font-size: 14px;
-  color: #475569;
+  color: #64748b;
 }
 
 .search-input {
@@ -216,10 +269,11 @@ function customRow(_record: Problem) {
   align-items: center;
   gap: 32px;
   padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
+  background: #ffffff;
   border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 12px;
   margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.05);
 }
 
 .filter-group {
@@ -241,23 +295,29 @@ function customRow(_record: Problem) {
 .filter-stats {
   margin-left: auto;
   font-size: 13px;
-  color: #475569;
+  color: #94a3b8;
 }
 
 .filter-stats strong {
-  color: #818cf8;
+  color: #6366f1;
+}
+
+.pagination-wrap {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* Table */
 .col-id {
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
-  color: #475569;
+  color: #94a3b8;
 }
 
 .col-title {
   font-size: 15px;
-  color: #cbd5e1;
+  color: #334155;
   font-weight: 500;
   transition: color 0.2s;
 }
@@ -277,9 +337,9 @@ function customRow(_record: Problem) {
 .algo-tag {
   border-radius: 6px;
   font-size: 12px;
-  background: rgba(99, 102, 241, 0.1) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
-  color: #818cf8 !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
+  color: #6366f1 !important;
 }
 
 .ac-rate {
@@ -295,32 +355,31 @@ function customRow(_record: Problem) {
 
 .ac-text {
   font-size: 13px;
-  color: #64748b;
+  color: #94a3b8;
   min-width: 40px;
 }
 
-.status-solved {
-  color: #22c55e;
+.status-unsolved {
+  color: #cbd5e1;
   font-size: 16px;
 }
 
-.status-unsolved {
-  color: #374151;
-  font-size: 16px;
+.muted {
+  color: #94a3b8;
 }
 </style>
 
 <style>
-/* Table dark theme overrides */
 .problem-table .ant-table {
-  background: rgba(255, 255, 255, 0.02) !important;
+  background: #ffffff !important;
   border: 1px solid rgba(99, 102, 241, 0.12) !important;
   border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(99, 102, 241, 0.06) !important;
 }
 
 .problem-table .ant-table-thead > tr > th {
-  background: rgba(99, 102, 241, 0.06) !important;
-  border-bottom: 1px solid rgba(99, 102, 241, 0.15) !important;
+  background: rgba(99, 102, 241, 0.04) !important;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.1) !important;
   color: #64748b !important;
   font-size: 13px !important;
   font-weight: 600 !important;
@@ -331,40 +390,24 @@ function customRow(_record: Problem) {
 }
 
 .problem-table .ant-table-tbody > tr:hover > td {
-  background: rgba(99, 102, 241, 0.05) !important;
+  background: rgba(99, 102, 241, 0.04) !important;
 }
 
 .problem-table .ant-table-tbody > tr:hover .col-title {
-  color: #a5b4fc !important;
+  color: #6366f1 !important;
 }
 
-.problem-table .ant-pagination {
-  margin-top: 20px !important;
-}
-
-/* Search input dark style */
-.search-input .ant-input-affix-wrapper {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
-  border-radius: 10px !important;
-}
-
-.search-input .ant-input {
-  background: transparent !important;
-  color: #e2e8f0 !important;
-}
-
-/* RadioButton dark style */
+/* RadioButton light style */
 .diff-radio .ant-radio-button-wrapper {
-  background: transparent !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
+  background: #ffffff !important;
+  border-color: rgba(99, 102, 241, 0.2) !important;
   color: #64748b !important;
   font-size: 13px !important;
 }
 
 .diff-radio .ant-radio-button-wrapper-checked {
-  background: rgba(99, 102, 241, 0.2) !important;
+  background: #6366f1 !important;
   border-color: #6366f1 !important;
-  color: #a5b4fc !important;
+  color: #ffffff !important;
 }
 </style>

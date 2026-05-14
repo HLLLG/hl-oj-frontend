@@ -159,19 +159,19 @@ async function handleRegister() {
 }
 
 .bg-glow-1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
-  top: -100px;
-  right: -100px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, transparent 70%);
+  top: -150px;
+  right: -150px;
 }
 
 .bg-glow-2 {
-  width: 350px;
-  height: 350px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, transparent 70%);
-  bottom: -80px;
-  left: -80px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.14) 0%, transparent 70%);
+  bottom: -100px;
+  left: -100px;
 }
 
 .auth-card {
@@ -179,14 +179,12 @@ async function handleRegister() {
   z-index: 1;
   width: 420px;
   padding: 48px 40px;
-  background: rgba(15, 16, 32, 0.9);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.15);
   border-radius: 20px;
-  backdrop-filter: blur(20px);
   box-shadow:
-    0 0 0 1px rgba(99, 102, 241, 0.05),
-    0 24px 64px rgba(0, 0, 0, 0.5),
-    0 0 80px rgba(99, 102, 241, 0.06);
+    0 4px 24px rgba(99, 102, 241, 0.08),
+    0 16px 48px rgba(99, 102, 241, 0.06);
 }
 
 .auth-logo {
@@ -199,13 +197,13 @@ async function handleRegister() {
 
 .logo-icon {
   font-size: 24px;
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.8));
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.5));
 }
 
 .logo-text {
   font-size: 22px;
   font-weight: 800;
-  color: #e2e8f0;
+  color: #1e293b;
   letter-spacing: -0.5px;
 }
 
@@ -219,13 +217,13 @@ async function handleRegister() {
 .auth-title {
   font-size: 24px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #1e293b;
   margin-bottom: 8px;
 }
 
 .auth-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: #94a3b8;
   margin-bottom: 32px;
 }
 
@@ -240,70 +238,34 @@ async function handleRegister() {
   height: 44px !important;
   font-size: 15px !important;
   font-weight: 600 !important;
-  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.35) !important;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3) !important;
   transition: all 0.2s !important;
 }
 
 .auth-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5) !important;
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.45) !important;
 }
 
 .auth-footer {
   text-align: center;
   font-size: 14px;
-  color: #64748b;
+  color: #94a3b8;
   margin-top: 20px;
 }
 
 .auth-link {
-  color: #818cf8;
+  color: #6366f1;
   font-weight: 500;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .auth-link:hover {
-  color: #a5b4fc;
+  color: #4f46e5;
 }
 
 .input-icon {
-  color: #64748b;
-}
-</style>
-
-<style>
-.auth-input .ant-input,
-.auth-input.ant-input,
-.auth-input .ant-input-password {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
-  border-radius: 10px !important;
-  color: #e2e8f0 !important;
-  height: 44px !important;
-}
-
-.auth-input .ant-input:focus,
-.auth-input.ant-input:focus,
-.auth-input .ant-input-affix-wrapper:focus,
-.auth-input .ant-input-affix-wrapper-focused {
-  border-color: #6366f1 !important;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15) !important;
-}
-
-.auth-input .ant-input-affix-wrapper {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border-color: rgba(99, 102, 241, 0.25) !important;
-  border-radius: 10px !important;
-  height: 44px !important;
-}
-
-.auth-input .ant-input-affix-wrapper:hover {
-  border-color: rgba(99, 102, 241, 0.5) !important;
-}
-
-.auth-input .ant-input-affix-wrapper input {
-  background: transparent !important;
-  color: #e2e8f0 !important;
+  color: #94a3b8;
 }
 </style>

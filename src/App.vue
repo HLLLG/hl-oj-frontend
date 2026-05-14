@@ -8,17 +8,17 @@
 import { theme } from 'ant-design-vue'
 
 const antTheme = {
-  algorithm: theme.darkAlgorithm,
+  algorithm: theme.defaultAlgorithm,
   token: {
     colorPrimary: '#6366f1',
-    colorBgBase: '#070810',
-    colorBgContainer: '#0f1020',
-    colorBgElevated: '#131425',
-    colorBorder: 'rgba(99,102,241,0.2)',
-    colorBorderSecondary: 'rgba(99,102,241,0.12)',
-    colorText: '#e2e8f0',
-    colorTextSecondary: '#94a3b8',
-    colorTextTertiary: '#64748b',
+    colorBgBase: '#f0f4ff',
+    colorBgContainer: '#ffffff',
+    colorBgElevated: '#ffffff',
+    colorBorder: 'rgba(99, 102, 241, 0.2)',
+    colorBorderSecondary: 'rgba(99, 102, 241, 0.12)',
+    colorText: '#1e293b',
+    colorTextSecondary: '#475569',
+    colorTextTertiary: '#94a3b8',
     borderRadius: 10,
     fontFamily:
       '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif',
@@ -29,14 +29,16 @@ const antTheme = {
 <style>
 /* CSS Variables */
 :root {
-  --oj-bg: #070810;
-  --oj-surface: rgba(255, 255, 255, 0.03);
-  --oj-border: rgba(99, 102, 241, 0.2);
+  --oj-bg: #f0f4ff;
+  --oj-surface: #ffffff;
+  --oj-surface-alt: #f8f9fe;
+  --oj-border: rgba(99, 102, 241, 0.15);
   --oj-primary: #6366f1;
   --oj-secondary: #8b5cf6;
   --oj-accent: #06b6d4;
-  --oj-text: #e2e8f0;
-  --oj-text-muted: #64748b;
+  --oj-text: #1e293b;
+  --oj-text-secondary: #475569;
+  --oj-text-muted: #94a3b8;
 }
 
 /* Reset & Base */
@@ -70,67 +72,73 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--oj-bg);
+  background: #f0f4ff;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.25);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
+  background: rgba(99, 102, 241, 0.45);
 }
 
 /* Selection */
 ::selection {
-  background: rgba(99, 102, 241, 0.3);
-  color: #e2e8f0;
+  background: rgba(99, 102, 241, 0.18);
+  color: #1e293b;
 }
 
-/* Ant Design global dark overrides */
+/* Ant Design global light overrides */
 .ant-layout {
   background: var(--oj-bg) !important;
 }
 
 .ant-select-dropdown {
-  background: #131425 !important;
-  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
   border-radius: 10px !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.12) !important;
 }
 
 .ant-select-item {
-  color: #94a3b8 !important;
+  color: #475569 !important;
 }
 
 .ant-select-item-option-active,
 .ant-select-item-option-selected {
-  background: rgba(99, 102, 241, 0.1) !important;
-  color: #a5b4fc !important;
+  background: rgba(99, 102, 241, 0.08) !important;
+  color: #6366f1 !important;
 }
 
 .ant-pagination-item {
-  background: rgba(255, 255, 255, 0.03) !important;
+  background: #ffffff !important;
   border-color: rgba(99, 102, 241, 0.2) !important;
 }
 
 .ant-pagination-item a {
-  color: #94a3b8 !important;
+  color: #475569 !important;
 }
 
 .ant-pagination-item-active {
-  background: rgba(99, 102, 241, 0.15) !important;
+  background: rgba(99, 102, 241, 0.1) !important;
   border-color: #6366f1 !important;
 }
 
 .ant-pagination-item-active a {
-  color: #a5b4fc !important;
+  color: #6366f1 !important;
 }
 
 .ant-pagination-prev button,
 .ant-pagination-next button {
-  color: #64748b !important;
-  background: transparent !important;
+  color: #94a3b8 !important;
+  background: #ffffff !important;
   border-color: rgba(99, 102, 241, 0.2) !important;
+}
+
+/* md-editor-v3 fullscreen z-index fix */
+.md-editor-fullscreen {
+  z-index: 9999 !important;
 }
 </style>
