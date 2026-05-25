@@ -138,19 +138,7 @@
 
         <!-- Judge Result -->
         <transition name="fade">
-          <div v-if="submitResult" class="judge-result" :class="getResultPanelClass(submitResult)">
-            <div class="result-main">
-              <span class="result-status-text">{{ getSubmitStatusText(submitResult) }}</span>
-              <a-space v-if="submitResult.judgeInfo" :size="20" class="result-info">
-                <span v-if="submitResult.judgeInfo.time !== undefined">
-                  <ClockCircleOutlined /> {{ submitResult.judgeInfo.time }} ms
-                </span>
-                <span v-if="submitResult.judgeInfo.memory !== undefined">
-                  <DatabaseOutlined /> {{ submitResult.judgeInfo.memory }} KB
-                </span>
-              </a-space>
-            </div>
-          </div>
+          <JudgeResultPanel v-if="submitResult" :result="submitResult" />
         </transition>
       </div>
     </div>
@@ -161,7 +149,9 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { ArrowLeftOutlined, ClockCircleOutlined, DatabaseOutlined } from '@ant-design/icons-vue'
+import { ArrowLeftOutlined } from '@ant-design/icons-vue'
+import JudgeResultPanel from '@/components/JudgeResultPanel.vue'
+import { getSubmitStatusText, getSubmitStatusColor } from '@/utils/judgeResult'
 import { MdPreview } from 'md-editor-v3'
 import { getQuestionVoById } from '@/api/questionController'
 import {
@@ -279,42 +269,6 @@ function getTagColor(tag: string): string {
 function computeAcRate(submitNum?: number, acceptedNum?: number): string {
   if (!submitNum || submitNum === 0) return '0.0'
   return (((acceptedNum ?? 0) / submitNum) * 100).toFixed(1)
-}
-
-const judgeMessageMap: Record<string, string> = {
-  Accepted: '通过',
-  'Wrong Answer': '答案错误',
-  'Time Limit Exceeded': '超时',
-  'Memory Limit Exceeded': '内存超限',
-  'Compile Error': '编译错误',
-  'Runtime Error': '运行错误',
-  'System Error': '系统错误',
-}
-
-function getSubmitStatusText(record: any): string {
-  if (record.status === 0) return '等待中'
-  if (record.status === 1) return '判题中'
-  const msg = record.judgeInfo?.message as string | undefined
-  const display = msg ? judgeMessageMap[msg] : undefined
-  if (display) return display
-  if (record.status === 2) return '通过'
-  if (record.status === 3) return '失败'
-  return '未知'
-}
-
-function getSubmitStatusColor(record: any): string {
-  if (record.status === 0 || record.status === 1) return 'default'
-  const msg = record.judgeInfo?.message
-  if (msg === 'Accepted') return 'success'
-  if (record.status === 2) return 'success'
-  return 'error'
-}
-
-function getResultPanelClass(record: any): string {
-  const msg = record.judgeInfo?.message
-  if (msg === 'Accepted' || record.status === 2) return 'result-ac'
-  if (record.status === 0 || record.status === 1) return 'result-pending'
-  return 'result-fail'
 }
 
 function formatDate(dateStr?: string): string {
@@ -584,46 +538,6 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   font-weight: 600;
   box-shadow: 0 2px 12px rgba(99, 102, 241, 0.35);
-}
-
-/* Judge Result */
-.judge-result {
-  margin: 0 16px 16px;
-  padding: 16px 20px;
-  border-radius: 10px;
-  border: 1px solid;
-}
-
-.result-ac {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.35);
-}
-
-.result-fail {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.35);
-}
-
-.result-pending {
-  background: rgba(99, 102, 241, 0.1);
-  border-color: rgba(99, 102, 241, 0.35);
-}
-
-.result-main {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
-
-.result-status-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: #e2e8f0;
-}
-
-.result-info {
-  font-size: 13px;
-  color: #94a3b8;
 }
 
 /* Transition */
