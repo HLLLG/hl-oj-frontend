@@ -6,10 +6,13 @@
           <h1 class="page-title">题目管理</h1>
           <p class="page-desc">管理所有题目，支持增删改查</p>
         </div>
-        <a-button type="primary" class="create-btn" @click="router.push('/admin/question/create')">
-          <template #icon><PlusOutlined /></template>
-          新建题目
-        </a-button>
+        <a-space>
+          <a-button @click="router.push('/admin/question-submit')">用户提交管理</a-button>
+          <a-button type="primary" class="create-btn" @click="router.push('/admin/question/create')">
+            <template #icon><PlusOutlined /></template>
+            新建题目
+          </a-button>
+        </a-space>
       </div>
 
       <!-- Search -->

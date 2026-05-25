@@ -3,8 +3,8 @@
     <div class="manage-container">
       <div class="page-header">
         <div>
-          <h1 class="page-title">提交管理</h1>
-          <p class="page-desc">管理员可查询全部用户的题目提交记录</p>
+          <h1 class="page-title">用户提交管理</h1>
+          <p class="page-desc">管理员浏览、检索全部用户的题目代码提交记录</p>
         </div>
       </div>
 
@@ -32,6 +32,15 @@
             <a-input
               v-model:value="filterForm.userId"
               placeholder="用户 ID"
+              allow-clear
+              style="width: 140px"
+              @press-enter="handleSearch"
+            />
+          </a-form-item>
+          <a-form-item label="用户账号">
+            <a-input
+              v-model:value="filterForm.userAccount"
+              placeholder="精确匹配账号"
               allow-clear
               style="width: 140px"
               @press-enter="handleSearch"
@@ -91,6 +100,15 @@
               </span>
             </span>
             <span v-else class="muted">-</span>
+          </template>
+
+          <template v-else-if="column.key === 'userId'">
+            <div class="user-cell">
+              <span>{{ getUserDisplay(record.userId) }}</span>
+              <span v-if="getUserAccount(record.userId)" class="user-account">
+                {{ getUserAccount(record.userId) }}
+              </span>
+            </div>
           </template>
 
           <template v-else-if="column.key === 'questionId'">
@@ -172,6 +190,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { listQuestionSubmitVoByPage } from '@/api/questionSubmitController'
+import { getUserVoById, listUserVoByPage } from '@/api/userController'
 import JudgeResultPanel from '@/components/JudgeResultPanel.vue'
 import { getSubmitStatusText, getSubmitStatusColor } from '@/utils/judgeResult'
 import type { TableColumnsType } from 'ant-design-vue'
@@ -185,9 +204,12 @@ const filterForm = reactive({
   id: '' as string,
   questionId: '' as string,
   userId: '' as string,
+  userAccount: '' as string,
   language: undefined as string | undefined,
   status: undefined as number | undefined,
 })
+
+const userInfoMap = ref<Record<string, { userName?: string; userAccount?: string }>>({})
 
 const pagination = reactive({
   current: 1,
@@ -212,7 +234,7 @@ const languageOptions = [
 const columns: TableColumnsType = [
   { title: '提交 ID', dataIndex: 'id', key: 'id', width: 100 },
   { title: '题目', key: 'questionId', width: 90 },
-  { title: '用户 ID', dataIndex: 'userId', key: 'userId', width: 100 },
+  { title: '提交用户', key: 'userId', width: 140 },
   { title: '语言', dataIndex: 'language', key: 'language', width: 80 },
   { title: '状态', key: 'status', width: 110 },
   { title: '执行信息', key: 'judgeInfo', width: 140 },
@@ -244,7 +266,54 @@ function showDetail(record: API.QuestionSubmitVO) {
   detailModalVisible.value = true
 }
 
-function buildQueryParams(): API.QuestionSubmitQueryRequest {
+function getUserDisplay(userId?: number | string): string {
+  if (userId === undefined || userId === null) return '-'
+  const key = String(userId)
+  return userInfoMap.value[key]?.userName ?? `ID ${key}`
+}
+
+function getUserAccount(userId?: number | string): string {
+  if (userId === undefined || userId === null) return ''
+  return userInfoMap.value[String(userId)]?.userAccount ?? ''
+}
+
+async function hydrateUserInfo(records: API.QuestionSubmitVO[]) {
+  const ids = [...new Set(records.map((r) => r.userId).filter((id) => id != null))] as number[]
+  const pending = ids.filter((id) => !userInfoMap.value[String(id)])
+  if (pending.length === 0) return
+
+  await Promise.all(
+    pending.map(async (id) => {
+      try {
+        const res: any = await getUserVoById({ id })
+        if (res.data.code === 0 && res.data.data) {
+          userInfoMap.value[String(id)] = {
+            userName: res.data.data.userName,
+            userAccount: res.data.data.userAccount,
+          }
+        }
+      } catch {
+        // ignore single user fetch failure
+      }
+    }),
+  )
+}
+
+async function resolveUserIdByAccount(): Promise<number | undefined> {
+  const account = filterForm.userAccount.trim()
+  if (!account) return undefined
+  const res: any = await listUserVoByPage({
+    current: 1,
+    pageSize: 1,
+    userAccount: account,
+  })
+  if (res.data.code === 0 && res.data.data?.records?.length) {
+    return res.data.data.records[0].id
+  }
+  return undefined
+}
+
+async function buildQueryParams(): Promise<API.QuestionSubmitQueryRequest> {
   const params: API.QuestionSubmitQueryRequest = {
     current: pagination.current,
     pageSize: pagination.pageSize,
@@ -253,7 +322,13 @@ function buildQueryParams(): API.QuestionSubmitQueryRequest {
   }
   const id = parseOptionalLong(filterForm.id)
   const questionId = parseOptionalLong(filterForm.questionId)
-  const userId = parseOptionalLong(filterForm.userId)
+  let userId = parseOptionalLong(filterForm.userId)
+  if (userId === undefined && filterForm.userAccount.trim()) {
+    userId = await resolveUserIdByAccount()
+    if (userId === undefined) {
+      throw new Error('USER_NOT_FOUND')
+    }
+  }
   if (id !== undefined) params.id = id
   if (questionId !== undefined) params.questionId = questionId
   if (userId !== undefined) params.userId = userId
@@ -265,15 +340,23 @@ function buildQueryParams(): API.QuestionSubmitQueryRequest {
 async function loadData() {
   loading.value = true
   try {
-    const res: any = await listQuestionSubmitVoByPage(buildQueryParams())
+    const params = await buildQueryParams()
+    const res: any = await listQuestionSubmitVoByPage(params)
     if (res.data.code === 0 && res.data.data) {
       submitList.value = res.data.data.records ?? []
       pagination.total = res.data.data.total ?? 0
+      await hydrateUserInfo(submitList.value)
     } else {
       message.error(res.data.message || '加载失败')
     }
-  } catch {
-    message.error('请求失败，请检查网络或后端服务是否启动')
+  } catch (err) {
+    if (err instanceof Error && err.message === 'USER_NOT_FOUND') {
+      submitList.value = []
+      pagination.total = 0
+      message.warning('未找到该用户账号')
+    } else {
+      message.error('请求失败，请检查网络或后端服务是否启动')
+    }
   } finally {
     loading.value = false
   }
@@ -288,6 +371,7 @@ function handleReset() {
   filterForm.id = ''
   filterForm.questionId = ''
   filterForm.userId = ''
+  filterForm.userAccount = ''
   filterForm.language = undefined
   filterForm.status = undefined
   pagination.current = 1
@@ -352,6 +436,18 @@ onMounted(loadData)
 
 .muted {
   color: #475569;
+}
+
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+}
+
+.user-account {
+  font-size: 12px;
+  color: #64748b;
 }
 
 .editor-loading {

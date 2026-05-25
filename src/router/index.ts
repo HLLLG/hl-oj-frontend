@@ -39,7 +39,7 @@ const router = createRouter({
         { path: 'admin/question', name: 'adminQuestion', component: QuestionManageView, meta: { access: ACCESS_ENUM.ADMIN, title: '题目管理' } },
         { path: 'admin/question/create', name: 'adminQuestionCreate', component: QuestionCreateView, meta: { access: ACCESS_ENUM.ADMIN, hideInMenu: true } },
         { path: 'admin/question/edit/:id', name: 'adminQuestionEdit', component: QuestionEditView, meta: { access: ACCESS_ENUM.ADMIN, hideInMenu: true } },
-        { path: 'admin/question-submit', name: 'adminQuestionSubmit', component: QuestionSubmitManageView, meta: { access: ACCESS_ENUM.ADMIN, title: '提交管理' } },
+        { path: 'admin/question-submit', name: 'adminQuestionSubmit', component: QuestionSubmitManageView, meta: { access: ACCESS_ENUM.ADMIN, title: '用户提交管理' } },
         // Question detail & submit list (user)
         { path: 'question/:id', name: 'questionDetail', component: QuestionDetailView, meta: { access: ACCESS_ENUM.NOT_LOGIN, hideInMenu: true } },
         { path: 'submissions', name: 'submissions', component: QuestionSubmitListView, meta: { access: ACCESS_ENUM.USER, title: '提交记录', hideInMenu: true } },
