@@ -60,6 +60,7 @@ import {
   BarChartOutlined,
   MessageOutlined,
   OrderedListOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import type { MenuProps } from 'ant-design-vue'
@@ -81,6 +82,7 @@ const iconMap: Record<string, Component> = {
   ranking: BarChartOutlined,
   discuss: MessageOutlined,
   adminQuestion: OrderedListOutlined,
+  adminQuestionSubmit: HistoryOutlined,
 }
 
 const menuItems = computed<MenuProps['items']>(() => {

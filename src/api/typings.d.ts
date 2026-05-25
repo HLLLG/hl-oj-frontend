@@ -91,6 +91,10 @@ declare namespace API {
     id: number
   }
 
+  type getQuestionSubmitVOById1Params = {
+    id: number
+  }
+
   type getQuestionSubmitVOByIdParams = {
     id: number
   }
@@ -122,6 +126,8 @@ declare namespace API {
     message?: string
     time?: number
     memory?: number
+    /** 编译/运行错误文本，或答案错误时的用例对比 JSON */
+    detail?: string
   }
 
   type LoginUserVO = {
