@@ -189,7 +189,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { listQuestionSubmitVoByPage } from '@/api/questionSubmitController'
+import { listQuestionSubmitVoByPage } from '@/api/questionController'
 import { getUserVoById, listUserVoByPage } from '@/api/userController'
 import JudgeResultPanel from '@/components/JudgeResultPanel.vue'
 import { getSubmitStatusText, getSubmitStatusColor } from '@/utils/judgeResult'

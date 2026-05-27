@@ -28,7 +28,7 @@ function parseSafeBigInt(raw: string): unknown {
 }
 
 const myAxios = axios.create({
-  baseURL: 'http://localhost:8123/api',
+  baseURL: 'http://localhost:8100/api',
   timeout: 60000,
   withCredentials: true,
   transformResponse: [

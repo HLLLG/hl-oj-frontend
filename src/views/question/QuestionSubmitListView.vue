@@ -132,7 +132,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { listQuestionSubmitVoByPage } from '@/api/questionSubmitController'
+import { listQuestionSubmitVoByPage } from '@/api/questionController'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import type { TableColumnsType } from 'ant-design-vue'
 

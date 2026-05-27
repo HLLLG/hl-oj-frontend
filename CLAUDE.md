@@ -10,6 +10,7 @@ npm run build        # type-check + production build
 npm run type-check   # vue-tsc only
 npm run lint         # oxlint + eslint (both with --fix)
 npm run format       # prettier on src/
+npm run openapi2ts   # merge gateway OpenAPI specs then regenerate src/api/ (via @umijs/openapi)
 ```
 
 No test suite is set up yet.
@@ -26,7 +27,7 @@ No test suite is set up yet.
 
 - **`App.vue`** — only contains Ant Design dark theme config (`theme.darkAlgorithm`, `colorPrimary: #6366f1`) and global CSS variables (`--oj-bg`, `--oj-primary`, etc.).
 - **`src/main.ts`** — registers Pinia, Vue Router, Ant Design, and the Monaco editor plugin; imports `md-editor-v3` CSS and `src/access/access.ts`.
-- **`src/access/access.ts`** — contains the `router.beforeEach` guard. On the first navigation it calls `loginUserStore.fetchLoginUser()` to hydrate user state, then uses `checkAccess()` to gate the route. Unauthenticated users are redirected to `/user/login?redirect=...`.
+- **`src/access/access.ts`** — contains the `router.beforeEach` guard. On the first navigation it awaits `loginUserStore.fetchLoginUser()` to hydrate user state; subsequent navigations use the cached value. Uses `checkAccess()` to gate routes. Unauthenticated users → `/user/login?redirect=...`; authenticated users with insufficient permissions → warning + back to previous page or `/`.
 
 ### Layout
 
@@ -39,26 +40,27 @@ Three files work together:
 | File | Role |
 |---|---|
 | `src/access/accessEnum.ts` | `NOT_LOGIN / USER / ADMIN` string constants |
-| `src/access/checkAccess.ts` | Pure function: `checkAccess(loginUser, needAccess)` → boolean |
+| `src/access/checkAccess.ts` | Pure function: `checkAccess(loginUser, needAccess)` → boolean. `USER` passes any logged-in role; `ADMIN` requires exactly `'admin'`; `NOT_LOGIN` always passes. |
 | `src/router/index.ts` | Every route carries `meta.access` and `meta.title` |
 
-`GlobalHeader.vue` reads `router.options.routes[0].children`, filters by `checkAccess` and `!meta.hideInMenu`, then builds the nav menu dynamically. It maintains an `iconMap` keyed by route `name`. Routes with `hideInMenu: true` are never shown in the nav regardless of access level.
+`GlobalHeader.vue` reads `router.options.routes[0].children`, filters by `checkAccess` and `!meta.hideInMenu`, then builds the nav menu dynamically. It maintains an `iconMap` keyed by route `name`. Routes with `hideInMenu: true` are never shown regardless of access level.
 
 ### Route structure
 
 ```
 /                     → BasicLayout
-  (index)             home           NOT_LOGIN  nav visible
-  problems            problems       NOT_LOGIN  nav visible
-  contests/ranking/discuss           NOT_LOGIN  nav visible
-  admin               admin          ADMIN      nav visible
-  admin/question      adminQuestion  ADMIN      nav visible (题目管理)
-  admin/question/create              ADMIN      hideInMenu
-  admin/question/edit/:id            ADMIN      hideInMenu
-  question/:id        questionDetail NOT_LOGIN  hideInMenu
-  submissions         submissions    USER       hideInMenu
-/user/login                          NOT_LOGIN  hideInMenu (outside BasicLayout)
-/user/register                       NOT_LOGIN  hideInMenu (outside BasicLayout)
+  (index)             home             NOT_LOGIN  nav visible
+  problems            problems         NOT_LOGIN  nav visible
+  contests            contests         NOT_LOGIN  nav visible
+  ranking             ranking          NOT_LOGIN  nav visible
+  discuss             discuss          NOT_LOGIN  nav visible
+  admin/question      adminQuestion    ADMIN      nav visible (题目管理)
+  admin/question/create                ADMIN      hideInMenu
+  admin/question/edit/:id              ADMIN      hideInMenu
+  question/:id        questionDetail   NOT_LOGIN  hideInMenu
+  submissions         submissions      USER       hideInMenu
+/user/login                            NOT_LOGIN  hideInMenu (outside BasicLayout)
+/user/register                         NOT_LOGIN  hideInMenu (outside BasicLayout)
 ```
 
 ### Question module (`src/views/question/`)
@@ -73,9 +75,9 @@ Three files work together:
 
 **Difficulty convention:** difficulty is stored as a tag (`简单` / `中等` / `困难`). Views that display difficulty extract it from `tags[]` and separate it from algorithm tags.
 
-**Judge status polling:** after `doQuestionSubmit`, `QuestionDetailView` polls `getQuestionSubmitVoById` every 1.5 s for up to 60 s (40 attempts). Clear the interval in `onBeforeUnmount`.
+**`Question` vs `QuestionVO`:** The admin API (`listQuestionByPage` / `getQuestionById`) returns `Question` where `tags`, `judgeCase`, `judgeConfig` are JSON strings. The user-facing API (`listQuestionVoByPage` / `getQuestionVoById`) returns `QuestionVO` where these fields are already parsed arrays/objects. Always parse JSON fields when using the admin API.
 
-**Admin vs user APIs:** `listQuestionByPage` (admin, returns `Question` with JSON-string fields) vs `listQuestionVoByPage` (user, returns `QuestionVO` with parsed arrays).
+**Judge status polling:** after `doQuestionSubmit`, `QuestionDetailView` polls `getQuestionSubmitVoById` every 1.5 s for up to 60 s (40 attempts). Clear the interval in `onBeforeUnmount`.
 
 ### Adding a new page
 
@@ -85,7 +87,7 @@ Three files work together:
 
 ### Pinia store
 
-`useLoginUserStore` (id `'id'`) exposes `loginUser` (reactive ref, initially `{ userName: '未登录' }`), `fetchLoginUser()` (calls `/user/get/login`), and `setLoginUser()`.
+`useLoginUserStore` (id `'id'`) exposes `loginUser` (reactive ref, initially `{ userName: '未登录' }`), `fetchLoginUser()` (calls `/user/get/login`), and `setLoginUser()`. Check `loginUser.id` to determine whether the user is authenticated.
 
 ### TypeScript notes
 
@@ -93,4 +95,8 @@ Three files work together:
 
 ### API layer
 
-All API functions live in `src/api/` and use the `request()` helper from `src/request.ts`. The base URL is `http://localhost:8123/api`. Response shape is always `{ code, message, data }` — `code === 0` means success. The response interceptor redirects to `/user/login` on `code === 40100`.
+All API functions live in `src/api/` and use the `request()` helper from `src/request.ts`. The base URL is `http://localhost:8100/api` (Spring Cloud Gateway). The helper returns the full Axios response — callers access `res.data.code` and `res.data.data` (not just `res.data`). Response shape is always `{ code, message, data }` — `code === 0` means success.
+
+The response interceptor handles `code === 40100` (unauthenticated): it only redirects to `/user/login` if the current route's `meta.access` is not `NOT_LOGIN`. Pages that don't require login silently ignore the 40100. For such pages (e.g. `QuestionDetailView`), guard the submit action explicitly by checking `loginUser.id` before calling the API.
+
+`request.ts` also handles Java `Long` precision loss: integers ≥ 16 digits are wrapped in quotes before `JSON.parse`, arriving as strings in the frontend.

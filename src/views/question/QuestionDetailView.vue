@@ -100,7 +100,6 @@
             v-model:value="language"
             :options="languageOptions"
             class="lang-select"
-            @change="handleLanguageChange"
           />
           <span class="toolbar-tip">按 Ctrl+/ 注释 · Ctrl+Z 撤销</span>
         </div>
@@ -153,12 +152,12 @@ import { ArrowLeftOutlined } from '@ant-design/icons-vue'
 import JudgeResultPanel from '@/components/JudgeResultPanel.vue'
 import { getSubmitStatusText, getSubmitStatusColor } from '@/utils/judgeResult'
 import { MdPreview } from 'md-editor-v3'
-import { getQuestionVoById } from '@/api/questionController'
 import {
   doQuestionSubmit,
   getQuestionSubmitVoById,
+  getQuestionVoById,
   listQuestionSubmitVoByPage,
-} from '@/api/questionSubmitController'
+} from '@/api/questionController'
 import { useLoginUserStore } from '@/stores/useLoginUserStore'
 import type { TableColumnsType } from 'ant-design-vue'
 
@@ -174,6 +173,7 @@ const activeTab = ref('description')
 
 const language = ref('java')
 const code = ref('')
+const codeMap: Record<string, string> = {}
 const submitting = ref(false)
 const submitResult = ref<any>(null)
 
@@ -276,9 +276,10 @@ function formatDate(dateStr?: string): string {
   return new Date(dateStr).toLocaleString('zh-CN')
 }
 
-function handleLanguageChange(val: string) {
-  code.value = codeTemplates[val] ?? ''
-}
+watch(language, (newLang, oldLang) => {
+  codeMap[oldLang] = code.value
+  code.value = codeMap[newLang] ?? codeTemplates[newLang] ?? ''
+})
 
 async function loadQuestion() {
   pageLoading.value = true

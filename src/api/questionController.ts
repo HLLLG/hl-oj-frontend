@@ -132,7 +132,7 @@ export async function listQuestionVoByPage(
 }
 
 /** 此处后端没有提供注释 POST /question/question_submit/do */
-export async function doQuestionSubmit1(
+export async function doQuestionSubmit(
   body: API.QuestionSubmitAddRequest,
   options?: { [key: string]: any }
 ) {
@@ -147,9 +147,9 @@ export async function doQuestionSubmit1(
 }
 
 /** 此处后端没有提供注释 GET /question/question_submit/get/vo */
-export async function getQuestionSubmitVoById1(
+export async function getQuestionSubmitVoById(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getQuestionSubmitVOById1Params,
+  params: API.getQuestionSubmitVOByIdParams,
   options?: { [key: string]: any }
 ) {
   return request<API.BaseResponseQuestionSubmitVO>('/question/question_submit/get/vo', {
@@ -162,7 +162,7 @@ export async function getQuestionSubmitVoById1(
 }
 
 /** 此处后端没有提供注释 POST /question/question_submit/list/page/vo */
-export async function listQuestionSubmitVoByPage1(
+export async function listQuestionSubmitVoByPage(
   body: API.QuestionSubmitQueryRequest,
   options?: { [key: string]: any }
 ) {

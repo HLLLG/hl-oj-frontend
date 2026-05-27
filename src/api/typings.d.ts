@@ -91,10 +91,6 @@ declare namespace API {
     id: number
   }
 
-  type getQuestionSubmitVOById1Params = {
-    id: number
-  }
-
   type getQuestionSubmitVOByIdParams = {
     id: number
   }
@@ -152,8 +148,8 @@ declare namespace API {
     size?: number
     current?: number
     orders?: OrderItem[]
-    optimizeCountSql?: PageQuestion
-    searchCount?: PageQuestion
+    optimizeCountSql?: any
+    searchCount?: any
     optimizeJoinOfCountSql?: boolean
     maxLimit?: number
     countId?: string
@@ -166,8 +162,8 @@ declare namespace API {
     size?: number
     current?: number
     orders?: OrderItem[]
-    optimizeCountSql?: PageQuestionSubmitVO
-    searchCount?: PageQuestionSubmitVO
+    optimizeCountSql?: any
+    searchCount?: any
     optimizeJoinOfCountSql?: boolean
     maxLimit?: number
     countId?: string
@@ -180,8 +176,8 @@ declare namespace API {
     size?: number
     current?: number
     orders?: OrderItem[]
-    optimizeCountSql?: PageQuestionVO
-    searchCount?: PageQuestionVO
+    optimizeCountSql?: any
+    searchCount?: any
     optimizeJoinOfCountSql?: boolean
     maxLimit?: number
     countId?: string
@@ -194,8 +190,8 @@ declare namespace API {
     size?: number
     current?: number
     orders?: OrderItem[]
-    optimizeCountSql?: PageUserVO
-    searchCount?: PageUserVO
+    optimizeCountSql?: any
+    searchCount?: any
     optimizeJoinOfCountSql?: boolean
     maxLimit?: number
     countId?: string
