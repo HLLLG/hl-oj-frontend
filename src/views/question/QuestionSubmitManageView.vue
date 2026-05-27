@@ -85,10 +85,17 @@
         :pagination="false"
         row-key="id"
         class="submit-table"
-        :scroll="{ x: 1100 }"
+        table-layout="fixed"
+        :scroll="{ x: 1280 }"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.key === 'status'">
+          <template v-if="column.key === 'id'">
+            <a-tooltip :title="String(record.id)">
+              <span class="id-text cell-ellipsis">{{ record.id }}</span>
+            </a-tooltip>
+          </template>
+
+          <template v-else-if="column.key === 'status'">
             <a-tag :color="getSubmitStatusColor(record)">{{ getSubmitStatusText(record) }}</a-tag>
           </template>
 
@@ -103,18 +110,33 @@
           </template>
 
           <template v-else-if="column.key === 'userId'">
-            <div class="user-cell">
-              <span>{{ getUserDisplay(record.userId) }}</span>
-              <span v-if="getUserAccount(record.userId)" class="user-account">
-                {{ getUserAccount(record.userId) }}
-              </span>
-            </div>
+            <a-tooltip
+              :title="
+                getUserAccount(record.userId)
+                  ? `${getUserDisplay(record.userId)}（${getUserAccount(record.userId)}）`
+                  : getUserDisplay(record.userId)
+              "
+            >
+              <div class="user-cell">
+                <span class="cell-ellipsis user-name">{{ getUserDisplay(record.userId) }}</span>
+                <span v-if="getUserAccount(record.userId)" class="user-account cell-ellipsis">
+                  {{ getUserAccount(record.userId) }}
+                </span>
+              </div>
+            </a-tooltip>
           </template>
 
           <template v-else-if="column.key === 'questionId'">
-            <a-button type="link" size="small" @click="router.push(`/question/${record.questionId}`)">
-              #{{ record.questionId }}
-            </a-button>
+            <a-tooltip :title="`题目 ID：${record.questionId}`">
+              <a-button
+                type="link"
+                size="small"
+                class="question-link cell-ellipsis"
+                @click="router.push(`/question/${record.questionId}`)"
+              >
+                {{ formatQuestionLabel(record.questionId) }}
+              </a-button>
+            </a-tooltip>
           </template>
 
           <template v-else-if="column.key === 'code'">
@@ -232,15 +254,28 @@ const languageOptions = [
 ]
 
 const columns: TableColumnsType = [
-  { title: '提交 ID', dataIndex: 'id', key: 'id', width: 100 },
-  { title: '题目', key: 'questionId', width: 90 },
-  { title: '提交用户', key: 'userId', width: 140 },
-  { title: '语言', dataIndex: 'language', key: 'language', width: 80 },
-  { title: '状态', key: 'status', width: 110 },
-  { title: '执行信息', key: 'judgeInfo', width: 140 },
-  { title: '操作', key: 'code', width: 120, fixed: 'right' },
-  { title: '提交时间', key: 'createTime', width: 160 },
+  { title: '提交 ID', dataIndex: 'id', key: 'id', width: 172, ellipsis: true },
+  { title: '题目', key: 'questionId', width: 112, ellipsis: true },
+  { title: '提交用户', key: 'userId', width: 132, ellipsis: true },
+  { title: '语言', dataIndex: 'language', key: 'language', width: 76, align: 'center' },
+  { title: '状态', key: 'status', width: 100, align: 'center' },
+  { title: '执行信息', key: 'judgeInfo', width: 128, ellipsis: true },
+  { title: '提交时间', key: 'createTime', width: 168, ellipsis: true },
+  { title: '操作', key: 'code', width: 108, fixed: 'right', align: 'center' },
 ]
+
+/** 长 ID 尾部展示，避免撑破列宽 */
+function shortenId(id?: number | string, tailLen = 8): string {
+  if (id === undefined || id === null) return '-'
+  const s = String(id)
+  if (s.length <= tailLen + 1) return s
+  return `…${s.slice(-tailLen)}`
+}
+
+function formatQuestionLabel(questionId?: number | string): string {
+  if (questionId === undefined || questionId === null) return '-'
+  return `题目 ${shortenId(questionId)}`
+}
 
 function parseOptionalLong(val: string): number | undefined {
   const trimmed = val.trim()
@@ -438,16 +473,52 @@ onMounted(loadData)
   color: #475569;
 }
 
+.cell-ellipsis {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.id-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: #94a3b8;
+  letter-spacing: -0.02em;
+}
+
 .user-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
   font-size: 13px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.user-name {
+  color: #e2e8f0;
 }
 
 .user-account {
   font-size: 12px;
   color: #64748b;
+}
+
+.question-link {
+  padding: 0 !important;
+  height: auto !important;
+  max-width: 100%;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.question-link :deep(span) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editor-loading {
@@ -478,8 +549,17 @@ onMounted(loadData)
   font-weight: 600 !important;
 }
 
+.submit-table .ant-table table {
+  table-layout: fixed !important;
+}
+
 .submit-table .ant-table-tbody > tr > td {
   border-bottom: 1px solid rgba(99, 102, 241, 0.06) !important;
+  overflow: hidden;
+}
+
+.submit-table .ant-table-tbody > tr > td .ant-btn-link {
+  max-width: 100%;
 }
 
 .submit-table .ant-table-tbody > tr:hover > td {
