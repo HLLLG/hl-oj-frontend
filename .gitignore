@@ -40,3 +40,6 @@ __screenshots__/
 
 # Claude Code local config
 .claude/
+
+# Local scratch files (screenshots, prompts, etc.)
+tmp/
